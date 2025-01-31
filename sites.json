@@ -1,0 +1,20 @@
+[
+    {
+      "name": "ReStore",
+      "baseUrl": "https://re-store.ru",
+      "categorySelector": ".card__full",
+      "productSelector": ".product-card",
+      "nameSelector": ".product-card__title",
+      "priceSelector": ".product-card__prices",
+      "linkSelector": ".product-card__link"
+    },
+    {
+      "name": "joom",
+      "baseUrl": "https://www.joom.ru/ru",
+      "categorySelector": ".category___hbRCZ",
+      "productSelector": ".product___F",
+      "nameSelector": ".name___asFfu",
+      "priceSelector": ".price___Vlu0y",
+      "linkSelector": ".content___N4xbX"
+    }
+  ]
