@@ -18,41 +18,55 @@ async function bootstrap() {
   // Инициализация браузера
   await productsService.initBrowser();
 
-  // Получение всех магазинов из базы данных
-  let stores;
-  try {
-    stores = await getAllStores();
-    if (stores.length === 0) {
-      console.error('Нет доступных магазинов в базе данных.');
+  // Функция для обработки магазинов
+  const processStores = async () => {
+    // Получение всех магазинов из базы данных
+    let stores;
+    try {
+      stores = await getAllStores();
+      if (stores.length === 0) {
+        console.error('Нет доступных магазинов в базе данных.');
+        return;
+      }
+    } catch (error) {
+      console.error(`Ошибка при получении магазинов: ${error.message}`);
       return;
     }
-  } catch (error) {
-    console.error(`Ошибка при получении магазинов: ${error.message}`);
-    return;
-  }
 
-  // Обработка каждого магазина по очереди
-  for (const store of stores) {
-    const storeId = store.id; // Используем id текущего магазина
-    console.log(`Начинаем обработку магазина с ID: ${storeId}`);
-    
-    try {
-      const addedProductIds = await productsService.scrapeAllProducts(storeId); // Передаем идентификатор
-      console.log(`Общее количество добавленных продуктов: ${addedProductIds.length}`);
-      console.log(`Добавленные продукты с ID из магазина ${storeId}:`, addedProductIds);
-    } catch (error) {
-      console.error(`Ошибка при скрейпинге продуктов из магазина с ID ${storeId}: ${error.message}`);
+    // Обработка каждого магазина по очереди
+    for (const store of stores) {
+      const storeId = store.id; // Используем id текущего магазина
+      console.log(`Начинаем обработку магазина с ID: ${storeId}`);
+      
+      try {
+        const addedProductIds = await productsService.scrapeAllProducts(storeId); 
+        console.log(`Общее количество добавленных продуктов: ${addedProductIds.length}`);
+        console.log(`Добавленные продукты с ID из магазина ${storeId}:`, addedProductIds);
+      } catch (error) {
+        console.error(`Ошибка при скрейпинге продуктов из магазина с ID ${storeId}: ${error.message}`);
+      }
+      
+      // Задержка перед обработкой следующего магазина 
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
-    
-    // Задержка перед обработкой следующего магазина (например, 2 секунды)
-    await new Promise(resolve => setTimeout(resolve, 2000));
-  }
-  
+  };
+
+  // Запуск обработки магазинов сразу при старте
+  await processStores();
+
+  // Установка интервала на 10 часов (36000000 миллисекунд)
+  setInterval(async () => {
+    console.log('Запуск периодической обработки магазинов...');
+    await processStores();
+  }, 36000000); 
+
   // Закрытие браузера после завершения работы
-  await productsService.closeBrowser();
+  process.on('exit', async () => {
+    await productsService.closeBrowser();
+  });
 }
 
 bootstrap().catch(error => {
   console.error('Ошибка при инициализации приложения:', error);
-  process.exit(1); // Завершение процесса с кодом ошибки
+  process.exit(1); 
 });

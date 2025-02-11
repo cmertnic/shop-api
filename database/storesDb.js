@@ -1,17 +1,13 @@
 const dotenv = require('dotenv');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
-
-// Загружаем переменные окружения из файла .env
 dotenv.config();
 
-// Проверяем наличие переменной окружения SQLITE_STORE_DB_PATH
 if (!process.env.SQLITE_STORE_DB_PATH) {
   console.error('Переменная окружения SQLITE_STORE_DB_PATH не определена.');
   process.exit(1);
 }
 
-// Получаем путь к базе данных из переменной окружения
 const dbPath = path.resolve(process.env.SQLITE_STORE_DB_PATH);
 
 // Создаем новое подключение к базе данных
@@ -30,14 +26,7 @@ function initDatabase() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       baseUrl TEXT NOT NULL UNIQUE,
-      categorySelector TEXT NOT NULL,
-      subcategorySelector TEXT,  -- Новый столбец для селектора подкатегорий
-      productSelector TEXT NOT NULL,
-      nameSelector TEXT NOT NULL,
-      priceSelector TEXT NOT NULL,
-      linkSelector TEXT NOT NULL,
-      nextPageSelector TEXT NOT NULL  -- Новый столбец для селектора следующей страницы
-    );`, (err) => {
+      selectors TEXT NOT NULL);`, (err) => {
       if (err) {
         console.error(`Ошибка при создании таблицы stores: ${err.message}`);
         reject(err);
@@ -52,7 +41,7 @@ function initDatabase() {
 // Функция для добавления магазина в базу данных
 async function addStore(store) {
   return new Promise((resolve, reject) => {
-    const { name, baseUrl, categorySelector, subcategorySelector, productSelector, nameSelector, priceSelector, linkSelector, nextPageSelector } = store;
+    const { name, baseUrl, selectors } = store;
 
     // Проверяем, существует ли магазин с таким же baseUrl
     db.get('SELECT * FROM stores WHERE baseUrl = ?', [baseUrl], (err, row) => {
@@ -60,13 +49,14 @@ async function addStore(store) {
         return reject(err);
       }
       if (row) {
-        return resolve(null); // Возвращаем null, если магазин уже существует
+        console.log(`Магазин с baseUrl ${baseUrl} уже существует.`);
+        return resolve(null); 
       }
 
       // Если магазин не существует, добавляем его
       db.run(
-        `INSERT INTO stores (name, baseUrl, categorySelector, subcategorySelector, productSelector, nameSelector, priceSelector, linkSelector, nextPageSelector) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [name, baseUrl, categorySelector, subcategorySelector, productSelector, nameSelector, priceSelector, linkSelector, nextPageSelector],
+        `INSERT INTO stores (name, baseUrl, selectors) VALUES (?, ?, ?)`,
+        [name, baseUrl, selectors],
         function (err) {
           if (err) {
             reject(err);
@@ -92,56 +82,184 @@ function getAllStores() {
   });
 }
 
-// Функция для создания задержки
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 async function seedDatabase() {
   const stores = [
     {
       name: "sima-land",
       baseUrl: "https://www.sima-land.ru",
-      categorySelector: ".xaisxI",
-      subcategorySelector: ".YbL5v0", 
-      productSelector: ".catalog__item",
-      nameSelector: ".jBE82l",
-      priceSelector: ".XJIe4q",
-      linkSelector: ".papCzt",
-      nextPageSelector: 'a[aria-label="Следующая страница"]' 
-    },
-    {
-      name: "lemanapro",
-      baseUrl: "https://lemanapro.ru",
-      categorySelector: ".gwlXjiSOOU_main-page",
-      subcategorySelector: ".gwlXjiSOOU_main-page",
-      productSelector: ".largeCard",
-      nameSelector: ".pblwt5z_plp",
-      priceSelector: ".mvc4syb_plp",
-      linkSelector: ".ihytpj4_plp",
-      nextPageSelector: 'a.bex6mjh_plp[data-qa-pagination-item="right"]' 
+      selectors: JSON.stringify({
+        default: {
+          categorySelector: ".xaisxI",
+          subcategorySelector: ".YbL5v0",
+          productSelector: ".catalog__item",
+          nameSelector: ".jBE82l",
+          priceSelector: ".XJIe4q",
+          linkSelector: ".papCzt",
+          nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+        },
+        alternatives: [  
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: ".uPrDSV",
+            nameSelector: ".CE21s_",
+            priceSelector: ".F9iyS4",
+            linkSelector: ".mFm_11",
+            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: ".XqxjOo",
+            nameSelector: ".CE21s_",
+            priceSelector: ".F9iyS4",
+            linkSelector: ".mFm_11",
+            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "Dvg2Gs HXhk0s f3iB48 fZvA3t hBeZbE VU0VGY",
+            nameSelector: "FnmiaU z4n3de zdQcLA",
+            priceSelector: "a2ZUfY bdgC2_",
+            linkSelector: ".w12a69",
+            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+          },
+           {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: ".cYJE9y",
+            nameSelector: "FnmiaU z4n3de zdQcLA",
+            priceSelector: "a2ZUfY bdgC2_",
+            linkSelector: ".w12a69",
+            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "dX0DkK AMtfke",
+            nameSelector: ".jBE82l",
+            priceSelector: ".pWnr5j",
+            linkSelector: "odeaio UtSouE PfpX13",
+            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "dX0DkK AMtfke",
+            nameSelector: ".jBE82l",
+            priceSelector: ".pWnr5j",
+            linkSelector: "odeaio UtSouE PfpX13",
+            nextPageSelector: 'MoSdWj Ky7lus qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "dX0DkK AMtfke",
+            nameSelector: "FnmiaU z4n3de zdQcLA",
+            priceSelector: "a2ZUfY bdgC2_",
+            linkSelector: ".w12a69",
+            nextPageSelector: 'MoSdWj Ky7lus qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: ".EMELMd",
+            nameSelector: "iSNGG7",
+            priceSelector: "C1_ch0 TsXWER",
+            linkSelector: ".P7zI0P",
+            nextPageSelector: 'MoSdWj Ky7lus qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "Tjryv6 jMV4W3 m5Eg__ catalog__item m358ND AVScRl",
+            nameSelector: "iSNGG7",
+            priceSelector: "C1_ch0 TsXWER",
+            linkSelector: ".P7zI0P",
+            nextPageSelector: 'MoSdWj Ky7lus qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "Tjryv6 jMV4W3 m5Eg__ catalog__item m358ND AVScRl",
+            nameSelector: ".o7U8An",
+            priceSelector: ".XJIe4q",
+            linkSelector: "odeaio papCzt PfpX13",
+            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: ".J1tO96",
+            nameSelector: "FnmiaU z4n3de",
+            priceSelector: "a2ZUfY bdgC2_",
+            linkSelector: ".w12a69",
+            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: ".NvlRoB",
+            nameSelector: "FnmiaU z4n3de",
+            priceSelector: "a2ZUfY bdgC2_",
+            linkSelector: ".w12a69",
+            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+          },
+        ]
+      }),
     },
     {
       name: "leran.pro",
       baseUrl: "https://www.leran.pro",
-      categorySelector: ".catalogue-info__image",
-      subcategorySelector: ".catalogue-info__image",
-      productSelector: ".item-catalogue.catalogue-list-item",
-      nameSelector: ".item-catalogue__item-name-link",
-      priceSelector: ".price__row_current",
-      linkSelector: ".item-catalogue__image",
-      nextPageSelector: 'div.paginator-more.item-catalogue-list__paginator-more > span.paginator-more__part.paginator-more__show' 
+      selectors: JSON.stringify({
+        default: {
+          categorySelector: ".catalogue-info__image",
+          subcategorySelector: ".catalogue-info__image",
+          productSelector: "item-catalogue catalogue-list-item",
+          nameSelector: ".item-catalogue__item-name-link",
+          priceSelector: ".price__row_current",
+          linkSelector: ".item-catalogue__image",
+          nextPageSelector: 'div.paginator-more.item-catalogue-list__paginator-more > span.paginator-more__part.paginator-more__show'
+        },
+        alternatives: [
+          {
+            categorySelector: ".catalogue-info__image",
+            subcategorySelector: ".catalogue-info__image",
+            productSelector: "item-catalogue catalogue-list-item",
+            nameSelector: ".item-catalogue__item-name",
+            priceSelector: ".price__row_current",
+            linkSelector: "image-link item-catalogue__image",
+            nextPageSelector: 'div.paginator-more.item-catalogue-list__paginator-more > span.paginator-more__part.paginator-more__show'
+          }
+        ]
+      }),
     },
     {
       name: "ReStore",
       baseUrl: "https://re-store.ru",
-      categorySelector: ".card__full",
-      subcategorySelector: ".card__full",
-      productSelector: ".product-card",
-      nameSelector: ".product-card__title",
-      priceSelector: ".product-card__prices",
-      linkSelector: ".product-card__link",
-      nextPageSelector: 'button.btn.btn--black.btn--size-sm.btn--full-width' 
+      selectors: JSON.stringify({
+        default: {
+          categorySelector: ".card__full",
+          subcategorySelector: ".card__full",
+          productSelector: ".product-card",
+          nameSelector: ".product-card__title",
+          priceSelector: ".product-card__prices",
+          linkSelector: ".product-card__link",
+          nextPageSelector: 'button.btn.btn--black.btn--size-sm.btn--full-width'
+        },
+        alternatives: [
+          {
+            categorySelector: ".alternative-category",
+            subcategorySelector: ".alternative-subcategory",
+            productSelector: ".alternative-product-card",
+            nameSelector: ".alternative-product-title",
+            priceSelector: ".alternative-product-prices",
+            linkSelector: ".alternative-product-link",
+            nextPageSelector: '.alternative-nextPage'
+          }
+        ]
+      }),
     }
   ];
 
@@ -160,9 +278,9 @@ async function seedDatabase() {
 // Инициализация базы данных и добавление магазинов
 async function initStore() {
   try {
-    await initDatabase(); // Создание таблицы
-    await seedDatabase(); // Заполнение таблицы начальными данными
-    const stores = await getAllStores(); // Получение всех магазинов для проверки
+    await initDatabase();
+    await seedDatabase(); 
+    const stores = await getAllStores(); 
     console.log(stores);
   } catch (error) {
     console.error(`Ошибка инициализации базы данных: ${error.message}`);
@@ -187,14 +305,14 @@ function getStoreById(storeId) {
       if (err) {
         return reject(err);
       }
-      resolve(row); // Возвращаем найденный магазин или null, если не найден
+      resolve(row); 
     });
   });
 }
 
-// Экспортируем функции для использования в других модулях
+
 module.exports = {
-  db, // Экспортируем соединение с базой данных
+  db, 
   addStore,
   getAllStores,
   seedDatabase,
