@@ -346,8 +346,12 @@ private async scrapeProductsFromCategory(
     });
   }
 
-  public getHello(): string {
-    return 'Hello World!';
+  public async getHello(): Promise<any[]> {  
+    try {
+      return await getAllProductsFromDb(); // Получаем все продукты
+    } catch (err) {
+      throw new Error(`Ошибка при получении приветствия: ${err.message}`);
+    }
   }
 }
 

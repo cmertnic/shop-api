@@ -5,14 +5,17 @@ import { initStore, getAllStores } from '../database/storesDb';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: false });
-  await app.listen(process.env.PORT ?? 3000);
+  const PORT = process.env.PORT ?? 3000;
+  await app.listen(PORT);
   
+  // Лог о том, что приложение запущено
+  console.log(`Приложение запущено на http://localhost:${PORT}`);
+
   // Инициализация базы данных
   await initStore().catch((error) => {
     console.error('Ошибка при заполнении базы данных:', error);
   });
   
-  // Создание экземпляра ProductsService
   const productsService = app.get(ProductsService);
 
   // Инициализация браузера
@@ -20,7 +23,6 @@ async function bootstrap() {
 
   // Функция для обработки магазинов
   const processStores = async () => {
-    // Получение всех магазинов из базы данных
     let stores;
     try {
       stores = await getAllStores();
@@ -35,7 +37,7 @@ async function bootstrap() {
 
     // Обработка каждого магазина по очереди
     for (const store of stores) {
-      const storeId = store.id; // Используем id текущего магазина
+      const storeId = store.id;
       console.log(`Начинаем обработку магазина с ID: ${storeId}`);
       
       try {
@@ -51,14 +53,16 @@ async function bootstrap() {
     }
   };
 
-  // Запуск обработки магазинов сразу при старте
-  await processStores();
-
-  // Установка интервала на 10 часов (36000000 миллисекунд)
-  setInterval(async () => {
-    console.log('Запуск периодической обработки магазинов...');
+  // Запуск обработки магазинов через 10 секунд после старта сервера
+  setTimeout(async () => {
+    console.log('Запуск обработки магазинов...');
     await processStores();
-  }, 36000000); 
+
+    setInterval(async () => {
+      console.log('Запуск периодической обработки магазинов...');
+      await processStores();
+    }, 36000000); 
+  }, 10000); 
 
   // Закрытие браузера после завершения работы
   process.on('exit', async () => {

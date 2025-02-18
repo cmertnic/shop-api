@@ -1,23 +1,24 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ProductsService } from './products.service';
-
+import { getAllProducts as getAllProductsFromDb, getProductByNameAndUrl, addProduct, updateProduct } from '../../database/productDb';
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productService: ProductsService) {}
 
-  @Get(':storeId')
-  async scrapeProducts(@Param('storeId') storeId: number) {
+  @Get('all')
+  async getAllProducts() {
     try {
-      const productIds = await this.productService.scrapeAllProducts(storeId);
-      return { productIds };
+      const products = await getAllProductsFromDb();
+      return { products };
     } catch (error) {
-      console.error(`Ошибка при получении магазина или сканировании продуктов: ${error.message}`);
+      console.error(`Ошибка при получении всех продуктов: ${error.message}`);
       return { message: 'Internal server error' };
     }
   }
 
   @Get('hello')
   getHello() {
-    return this.productService.getHello(); // Убедитесь, что этот метод существует
+    return this.productService.getHello(); 
   }
 }
+
