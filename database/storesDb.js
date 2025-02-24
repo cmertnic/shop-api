@@ -50,7 +50,7 @@ async function addStore(store) {
       }
       if (row) {
         console.log(`Магазин с baseUrl ${baseUrl} уже существует.`);
-        return resolve(null); 
+        return resolve(null);
       }
 
       // Если магазин не существует, добавляем его
@@ -95,6 +95,7 @@ async function seedDatabase() {
           nameSelector: ".jBE82l",
           priceSelector: ".XJIe4q",
           linkSelector: ".papCzt",
+          imageSelector: ".product-card__image",
           nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
         },
         alternatives: [  
@@ -105,24 +106,28 @@ async function seedDatabase() {
             nameSelector: ".CE21s_",
             priceSelector: ".F9iyS4",
             linkSelector: ".mFm_11",
-            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+            imageSelector: ".jwFsP1",
+            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'//https://www.sima-land.ru
           },
           {
-            categorySelector: ".xaisxI",
+            categorySelector: "dBzXXo ia3wHg xH9dDn",
+            subcategorySelector: "dBzXXo ia3wHg xH9dDn",
             subcategorySelector: ".YbL5v0",
             productSelector: ".XqxjOo",
             nameSelector: ".CE21s_",
             priceSelector: ".F9iyS4",
             linkSelector: ".mFm_11",
+            imageSelector: ".product-card__image",
             nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
           },
           {
-            categorySelector: ".xaisxI",
-            subcategorySelector: ".YbL5v0",
+            categorySelector: "odeaio SwS6Lz PfpX13",
+            subcategorySelector: "odeaio SwS6Lz PfpX13",
             productSelector: "Dvg2Gs HXhk0s f3iB48 fZvA3t hBeZbE VU0VGY",
             nameSelector: "FnmiaU z4n3de zdQcLA",
             priceSelector: "a2ZUfY bdgC2_",
             linkSelector: ".w12a69",
+            imageSelector: ".lT9Ljs",//https://www.sima-land.ru/igrushki/?banner_catalog_banner=49623&chpnk=1
             nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
           },
            {
@@ -132,6 +137,7 @@ async function seedDatabase() {
             nameSelector: "FnmiaU z4n3de zdQcLA",
             priceSelector: "a2ZUfY bdgC2_",
             linkSelector: ".w12a69",
+            imageSelector: ".lT9Ljs",//https://www.sima-land.ru/prazdniki/?banner_catalog_banner=50865&chpnk=1
             nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
           },
           {
@@ -141,6 +147,17 @@ async function seedDatabase() {
             nameSelector: ".jBE82l",
             priceSelector: ".pWnr5j",
             linkSelector: "odeaio UtSouE PfpX13",
+            imageSelector: ".ec1EMM",
+            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "MUI7n2",
+            nameSelector: "FUK7oh jIWtAO",
+            priceSelector: ".OmGIUl",
+            linkSelector: "FUK7oh jIWtAO",
+            imageSelector: ".dwb1m5",//https://www.sima-land.ru/10341524/antistress-skvish-myalka-uletnyy-zhmyak-7-cm-pasta/
             nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
           },
           {
@@ -149,7 +166,58 @@ async function seedDatabase() {
             productSelector: "dX0DkK AMtfke",
             nameSelector: ".jBE82l",
             priceSelector: ".pWnr5j",
+            linkSelector: "odeaio oGSri3",
+            imageSelector: ".ec1EMM",//https://www.sima-land.ru/podarochnye-nabory-na-23-fevralya/?banner_main=54786&chpnk=1&viewtype=cards
+            nextPageSelector: 'MoSdWj CheG6i WwH2wJ'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "_6SV5p",
+            nameSelector: "._9EfqO",
+            priceSelector: ".C1_ch0 X8KFZ9",
+            linkSelector: "odeaio oGSri3",
+            imageSelector: ".zdyGoQ",//https://www.sima-land.ru/3868687/yaschik-dlya-rassady-45-20-10-cm-s-ruchkami-6-l-plastik-chernyy
+            nextPageSelector: 'MoSdWj CheG6i WwH2wJ'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "_6SV5p",
+            nameSelector: "._9EfqO",
+            priceSelector: ".C1_ch0 X8KFZ9",
+            linkSelector: "odeaio oGSri3",
+            imageSelector: "DFqq_K HdtV8B",//https://www.sima-land.ru/3868687/yaschik-dlya-rassady-45-20-10-cm-s-ruchkami-6-l-plastik-chernyy
+            nextPageSelector: 'MoSdWj CheG6i WwH2wJ'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "dX0DkK AMtfke",
+            nameSelector: ".jBE82l",
+            priceSelector: ".pWnr5j",
+            linkSelector: "odeaio oGSri3",
+            imageSelector: ".ec1EMM",//https://www.sima-land.ru/podarochnye-nabory-na-23-fevralya/?banner_main=54786&chpnk=1&viewtype=cards
+            nextPageSelector: 'MoSdWj Ky7lus qJdE0d'
+          },
+          {
+            categorySelector: ".mufu24",
+            subcategorySelector: ".mufu24",
+            productSelector: "Tjryv6 jMV4W3 m5Eg__ catalog__item m358ND AVScRl",
+            nameSelector: ".jBE82l",
+            priceSelector: ".XJIe4q",
+            linkSelector: "odeaio papCzt PfpX13",
+            imageSelector: ".DjV7uU",//https://www.sima-land.ru/podarochnye-nabory-na-23-fevralya/?banner_main=54786&chpnk=1&viewtype=cards
+            nextPageSelector: 'MoSdWj Ky7lus qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "dX0DkK AMtfke",
+            nameSelector: ".jBE82l",
+            priceSelector: ".pWnr5j",
             linkSelector: "odeaio UtSouE PfpX13",
+            imageSelector: ".ec1EMM",
             nextPageSelector: 'MoSdWj Ky7lus qJdE0d'
           },
           {
@@ -159,6 +227,7 @@ async function seedDatabase() {
             nameSelector: "FnmiaU z4n3de zdQcLA",
             priceSelector: "a2ZUfY bdgC2_",
             linkSelector: ".w12a69",
+            imageSelector: ".ec1EMM",
             nextPageSelector: 'MoSdWj Ky7lus qJdE0d'
           },
           {
@@ -168,15 +237,27 @@ async function seedDatabase() {
             nameSelector: "iSNGG7",
             priceSelector: "C1_ch0 TsXWER",
             linkSelector: ".P7zI0P",
+            imageSelector: ".product-card__image",
             nextPageSelector: 'MoSdWj Ky7lus qJdE0d'
           },
           {
             categorySelector: ".xaisxI",
             subcategorySelector: ".YbL5v0",
             productSelector: "Tjryv6 jMV4W3 m5Eg__ catalog__item m358ND AVScRl",
-            nameSelector: "iSNGG7",
+            nameSelector: ".iSNGG7",
             priceSelector: "C1_ch0 TsXWER",
             linkSelector: ".P7zI0P",
+            imageSelector: ".product-card__image",
+            nextPageSelector: 'MoSdWj Ky7lus qJdE0d'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: "Tjryv6 jMV4W3 m5Eg__ catalog__item m358ND AVScRl",
+            nameSelector: ".jBE82l",
+            priceSelector: "C1_ch0 TsXWER",
+            linkSelector: ".P7zI0P",
+            imageSelector: ".product-card__image",
             nextPageSelector: 'MoSdWj Ky7lus qJdE0d'
           },
           {
@@ -186,7 +267,18 @@ async function seedDatabase() {
             nameSelector: ".o7U8An",
             priceSelector: ".XJIe4q",
             linkSelector: "odeaio papCzt PfpX13",
-            nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
+            imageSelector: ".DjV7uU",//https://www.sima-land.ru/termobele/?banner_banner_dust_cover=52075&chpnk=1&per-page=100&sort=discount&viewtype=cards
+            nextPageSelector: 'MoSdWj CheG6i WwH2wJ'
+          },
+          {
+            categorySelector: ".xaisxI",
+            subcategorySelector: ".YbL5v0",
+            productSelector: ".ln6TuA",
+            nameSelector: "odeaio EUvKfA",
+            priceSelector: ".fWlZy4",
+            linkSelector: "odeaio EUvKfA",
+            imageSelector: ".RfZDto",//https://www.sima-land.ru/termobele/?banner_banner_dust_cover=52075&chpnk=1&per-page=100&sort=discount&viewtype=cards
+            nextPageSelector: 'MoSdWj CheG6i WwH2wJ'
           },
           {
             categorySelector: ".xaisxI",
@@ -195,43 +287,19 @@ async function seedDatabase() {
             nameSelector: "FnmiaU z4n3de",
             priceSelector: "a2ZUfY bdgC2_",
             linkSelector: ".w12a69",
+            imageSelector: ".lT9Ljs",//https://www.sima-land.ru/podborki-tovarov-dlya-dachi/?banner_banner_dust_cover=54975&chpnk=1
             nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
           },
           {
             categorySelector: ".xaisxI",
             subcategorySelector: ".YbL5v0",
             productSelector: ".NvlRoB",
-            nameSelector: "FnmiaU z4n3de",
+            nameSelector: "FnmiaU z4n3de zdQcLA zFQi4D NFFioy",
             priceSelector: "a2ZUfY bdgC2_",
             linkSelector: ".w12a69",
+            imageSelector: ".lT9Ljs",//https://www.sima-land.ru/podborki-tovarov-dlya-dachi/?banner_banner_dust_cover=54975&chpnk=1
             nextPageSelector: 'MoSdWj rounds-undefined qJdE0d'
           },
-        ]
-      }),
-    },
-    {
-      name: "leran.pro",
-      baseUrl: "https://www.leran.pro",
-      selectors: JSON.stringify({
-        default: {
-          categorySelector: ".catalogue-info__image",
-          subcategorySelector: ".catalogue-info__image",
-          productSelector: "item-catalogue catalogue-list-item",
-          nameSelector: ".item-catalogue__item-name-link",
-          priceSelector: ".price__row_current",
-          linkSelector: ".item-catalogue__image",
-          nextPageSelector: 'div.paginator-more.item-catalogue-list__paginator-more > span.paginator-more__part.paginator-more__show'
-        },
-        alternatives: [
-          {
-            categorySelector: ".catalogue-info__image",
-            subcategorySelector: ".catalogue-info__image",
-            productSelector: "item-catalogue catalogue-list-item",
-            nameSelector: ".item-catalogue__item-name",
-            priceSelector: ".price__row_current",
-            linkSelector: "image-link item-catalogue__image",
-            nextPageSelector: 'div.paginator-more.item-catalogue-list__paginator-more > span.paginator-more__part.paginator-more__show'
-          }
         ]
       }),
     },
@@ -246,17 +314,49 @@ async function seedDatabase() {
           nameSelector: ".product-card__title",
           priceSelector: ".product-card__prices",
           linkSelector: ".product-card__link",
-          nextPageSelector: 'button.btn.btn--black.btn--size-sm.btn--full-width'
+          imageSelector: "v-lazy-image v-lazy-image-loaded",
+          nextPageSelector: 'btn btn--black btn--size-sm btn--full-width'
         },
         alternatives: [
           {
-            categorySelector: ".alternative-category",
-            subcategorySelector: ".alternative-subcategory",
-            productSelector: ".alternative-product-card",
-            nameSelector: ".alternative-product-title",
-            priceSelector: ".alternative-product-prices",
-            linkSelector: ".alternative-product-link",
-            nextPageSelector: '.alternative-nextPage'
+            categorySelector: ".card__full",
+            subcategorySelector: ".card__full",
+            productSelector: ".detail__inner",
+            nameSelector: ".detail-heading__heading",
+            priceSelector: ".detail-price__current",
+            linkSelector: ".product-card__link",
+            imageSelector: ".slides-swiper__main-image",
+            nextPageSelector: 'link text-small link--black'
+          },
+          {
+            categorySelector: ".card__full",
+            subcategorySelector: ".card__full",
+            productSelector: "popular-products__item product-card product-card--hovered",
+            nameSelector: ".product-card__title",
+            priceSelector: ".product-card__prices",
+            linkSelector: ".product-card__link",
+            imageSelector: "v-lazy-image v-lazy-image-loaded",
+            nextPageSelector: 'link text-small link--black'
+          },
+          {
+            categorySelector: ".card__full",
+            subcategorySelector: ".card__full",
+            productSelector: "catalog__product product-card product-card--hovered",
+            nameSelector: ".product-card__title",
+            priceSelector: ".product-card__prices",
+            linkSelector: ".product-card__link",
+            imageSelector: "product-card__image product-card__image--changeable",
+            nextPageSelector: 'link text-small link--black'
+          },
+          {
+            categorySelector: ".card__full",
+            subcategorySelector: ".card__full",
+            productSelector: "popular-products__item product-card product-card--hovered",
+            nameSelector: ".product-card__title",
+            priceSelector: ".product-card__prices",
+            linkSelector: ".product-card__link",
+            imageSelector: ".v-lazy-image.v-lazy-image-loaded",
+            nextPageSelector: 'link text-small link--black'
           }
         ]
       }),
@@ -279,8 +379,8 @@ async function seedDatabase() {
 async function initStore() {
   try {
     await initDatabase();
-    await seedDatabase(); 
-    const stores = await getAllStores(); 
+    await seedDatabase();
+      const stores = await getAllStores();
     console.log(stores);
   } catch (error) {
     console.error(`Ошибка инициализации базы данных: ${error.message}`);
@@ -305,18 +405,17 @@ function getStoreById(storeId) {
       if (err) {
         return reject(err);
       }
-      resolve(row); 
+      resolve(row);
     });
   });
 }
 
-
 module.exports = {
-  db, 
+  db,
   addStore,
   getAllStores,
   seedDatabase,
   initStore,
   closeDatabase,
-  getStoreById 
+  getStoreById
 };

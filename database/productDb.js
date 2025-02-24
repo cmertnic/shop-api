@@ -1,18 +1,13 @@
-// Подключаем необходимые модули
 const dotenv = require('dotenv');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 
-// Загружаем переменные окружения из файла .env
 dotenv.config();
 
-// Проверяем наличие переменной окружения SQLITE_PRODUCT_DB_PATH
 if (!process.env.SQLITE_PRODUCT_DB_PATH) {
   console.error('Переменная окружения SQLITE_PRODUCT_DB_PATH не определена.');
   process.exit(1);
 }
-
-// Получаем путь к базе данных из переменной окружения
 const dbPath = path.resolve(process.env.SQLITE_PRODUCT_DB_PATH);
 
 // Создаем новое подключение к базе данных
@@ -24,12 +19,11 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
   console.log('Подключено к базе данных продуктов');
 });
 
-// Создаем таблицу products, если она еще не создана
 db.run(`CREATE TABLE IF NOT EXISTS products (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  price REAL NOT NULL,
-  description TEXT,
+  price TEXT NOT NULL,  
+  img TEXT,          
   url TEXT
 );`, (err) => {
   if (err) {
@@ -41,34 +35,30 @@ db.run(`CREATE TABLE IF NOT EXISTS products (
 
 // Функция для добавления или обновления товара в базу данных
 async function addProduct(product) {
-  const { name, url, price, description } = product;
+  const { name, url, price, img } = product;
 
-  // Проверяем, что обязательные поля заполнены
   if (!name || !url || price === undefined || price === null) {
     console.error(`Не удалось добавить продукт: обязательные поля не заполнены. Продукт: ${JSON.stringify(product)}`);
     return;
   }
 
-  // Проверяем, существует ли товар с таким же названием и ссылкой
   const existingProduct = await getProductByNameAndUrl(name, url);
 
   if (existingProduct) {
-    // Если продукт существует, проверяем, изменилось ли его значение цены
     if (existingProduct.price !== price) {
-      product.id = existingProduct.id; // Сохраняем ID для обновления
-      await updateProduct(product); // Обновляем продукт в базе данных
-      console.log(`Обновлен продукт: ${product.name} с ID: ${existingProduct.id}`);
-    } else {
-      console.log(`Продукт ${product.name} с ID: ${existingProduct.id} уже существует и не требует обновления.`);
+      const oldPrice = existingProduct.price; // Сохраняем старую цену
+      product.id = existingProduct.id; 
+      await updateProduct(product); 
+      console.log(`Обновлен продукт: ${product.name} с ID: ${existingProduct.id}. Цена изменена с ${oldPrice} на ${price}.`);
     }
-    return existingProduct.id; // Возвращаем ID существующего товара
+    return existingProduct.id; 
   }
 
   // Если продукт не существует, добавляем его в базу данных
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO products (name, price, description, url) VALUES (?, ?, ?, ?)`,
-      [name, price, description, url],
+      `INSERT INTO products (name, price, img, url) VALUES (?, ?, ?, ?)`,
+      [name, price, img, url],
       function (err) {
         if (err) {
           console.error(`Ошибка при добавлении продукта: ${err.message}`);
@@ -81,6 +71,7 @@ async function addProduct(product) {
     );
   });
 }
+
 
 // Функция для получения товара по названию и ссылке из базы данных
 function getProductByNameAndUrl(name, url) {
@@ -137,11 +128,11 @@ function getProductById(id) {
 // Функция для обновления товара в базе данных
 function updateProduct(product) {
   return new Promise((resolve, reject) => {
-    const { id, name, price, description, url } = product;
+    const { id, name, price, img, url } = product;
 
     db.run(
-      `UPDATE products SET name = ?, price = ?, description = ?, url = ? WHERE id = ?`,
-      [name, price, description, url, id],
+      `UPDATE products SET name = ?, price = ?, img = ?, url = ? WHERE id = ?`,
+      [name, price, img, url, id],
       function (err) {
         if (err) {
           reject(err);
@@ -166,7 +157,6 @@ function deleteProduct(id) {
   });
 }
 
-// Экспортируем функции для использования в других модулях
 module.exports = {
   addProduct,
   getAllProducts,
@@ -174,5 +164,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   findProductByName,
-  getProductByNameAndUrl 
+  getProductByNameAndUrl
 };
+

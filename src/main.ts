@@ -61,7 +61,7 @@ async function bootstrap() {
     setInterval(async () => {
       console.log('Запуск периодической обработки магазинов...');
       await processStores();
-    }, 36000000); 
+    }, 1800000); 
   }, 10000); 
 
   // Закрытие браузера после завершения работы
