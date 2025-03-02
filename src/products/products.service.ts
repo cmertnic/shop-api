@@ -271,10 +271,9 @@ export class ProductsService {
     const baseUrl = store.baseUrl;
     const selectors = JSON.parse(store.selectors) as StoreType['selectors'];
     const categorySelector = selectors.default.categorySelector;
-    const productSelector = selectors.default.productSelector; // Основной селектор для продуктов
+    const productSelector = selectors.default.productSelector;
     console.log(`Получен магазин: ${store.name}. Base URL: ${baseUrl}, Category Selector: ${categorySelector}, Product Selector: ${productSelector}`);
 
-    // Получение продуктов с использованием основного селектора
     const initialProducts = await this.scrapeProducts(baseUrl, storeId, baseUrl, selectors);
     if (initialProducts.length === 0) {
       console.log(`Основной селектор для продуктов не сработал. Пробуем альтернативные селекторы...`);
@@ -283,7 +282,7 @@ export class ProductsService {
         if (altProducts.length > 0) {
           console.log(`Альтернативный селектор ${altSelector.productSelector} сработал.`);
           initialProducts.push(...altProducts);
-          break; // Выходим из цикла, если один из альтернативных селекторов сработал
+          break;
         }
       }
     }
@@ -297,11 +296,9 @@ export class ProductsService {
     const addedProductIds: number[] = [];
 
     const categoryScrapePromises = categoryLinks.map(async (categoryLink) => {
-      // Сканируем продукты в текущей категории
       const categoryProductIds = await this.scrapeProductsFromCategory(categoryLink, baseUrl, existingProductNames, storeId, selectors);
       addedProductIds.push(...categoryProductIds);
 
-      // Извлечение подкатегорий и сканирование их
       const subCategoryLinks = await this.getCategoryLinks(categoryLink, selectors.default.subcategorySelector, selectors);
       for (const subCategoryLink of subCategoryLinks) {
         const subCategoryProductIds = await this.scrapeProductsFromCategory(subCategoryLink, baseUrl, existingProductNames, storeId, selectors);
@@ -319,53 +316,11 @@ export class ProductsService {
     console.log(`Сканирование завершено. Всего добавлено продуктов: ${addedProductIds.length}`);
     return addedProductIds;
   }
-  private async fixIncorrectProduct(productId: number, selectors: StoreType['selectors']): Promise<void> {
-    const product = await getProductById(productId).catch(err => {
-        console.error(`Ошибка при получении продукта с ID ${productId}: ${err.message}`);
-        return null;
-    });
 
-    if (!product) return; // Если продукт не найден, выходим
-
-    const isInvalidProduct = !product.img || product.img === '' || !product.name || !product.price || !product.url;
-
-    if (isInvalidProduct) {
-        console.log(`Исправление товара с ID ${productId}.`);
-
-        const productPage = await this.browser.newPage();
-        await productPage.goto(product.url, { waitUntil: 'networkidle2' });
-
-        let foundImage = false;
-        for (const altSelector of selectors.alternatives) {
-            if (!product.img) {
-                const imgElement = await productPage.$(altSelector.imageSelector);
-                if (imgElement) {
-                    product.img = await productPage.evaluate((el: HTMLImageElement) => el.srcset || el.src || el.getAttribute('src'), imgElement);
-                    console.log(`Изображение найдено для товара с ID ${productId}: ${product.img}`);
-                    foundImage = true;
-                    break;
-                }
-            }
-        }
-
-        if (!foundImage) {
-            console.warn(`Не удалось найти изображение на странице товара: ${product.url}`);
-        }
-
-        await updateProduct(productId, { img: product.img });
-
-        await productPage.close();
-        await this.delay(1000);
-    }
-}
-private async fixIncorrectProducts(productIds: number[], selectors: StoreType['selectors']): Promise<void> {
-    console.log(`Начинаем исправление неправильных товаров...`);
-
-    await Promise.all(productIds.map(productId => this.fixIncorrectProduct(productId, selectors)));
-
-    console.log(`Исправление неправильных товаров завершено.`);
-}
-
+  private async fixIncorrectProducts(productIds: number[], selectors: StoreType['selectors']): Promise<void> {
+    const fixPromises = productIds.map(productId => this.fixIncorrectProduct(productId, selectors));
+    await Promise.all(fixPromises);
+  }
 
   private async scrapeProductsFromCategory(
     categoryUrl: string,
@@ -394,6 +349,7 @@ private async fixIncorrectProducts(productIds: number[], selectors: StoreType['s
       const extractedProducts = await this.scrapeProducts(categoryUrl, storeId, baseUrl, selectors);
       products.push(...extractedProducts);
       await this.delay(10000);
+
       // Обработка найденных продуктов
       if (products.length > 0) {
         const addProductPromises: Promise<number | null>[] = products.map(async (product: Product) => {
@@ -430,6 +386,9 @@ private async fixIncorrectProducts(productIds: number[], selectors: StoreType['s
       } else {
         console.warn(`Не найдено ни одного продукта для добавления в категорию: ${categoryUrl}`);
       }
+
+      // Асинхронное исправление неправильных товаров
+      await this.fixIncorrectProducts(addedProductIds, selectors);
     } catch (error) {
       console.error(`Ошибка при парсинге категории ${categoryUrl}: ${error.message}`);
     } finally {
@@ -437,6 +396,56 @@ private async fixIncorrectProducts(productIds: number[], selectors: StoreType['s
     }
 
     return addedProductIds;
+  }
+
+  private async fixIncorrectProduct(productId: number, selectors: StoreType['selectors']): Promise<void> {
+    const product = await getProductById(productId).catch(err => {
+      console.error(`Ошибка при получении продукта с ID ${productId}: ${err.message}`);
+      return null;
+    });
+
+    if (!product) return;
+
+    const isInvalidProduct = !product.name || !product.price || !product.url;
+
+    if (isInvalidProduct) {
+      console.log(`Исправление товара с ID ${productId}. Продукт невалиден (отсутствует имя, цена или URL).`);
+
+      const productPage = await this.browser.newPage();
+      await productPage.goto(product.url, { waitUntil: 'networkidle2' });
+
+      let foundImage = false;
+
+      // Проверяем наличие изображения
+      if (!product.img || product.img === '') {
+        console.log(`Изображение отсутствует для товара с ID ${productId}. Начинаем поиск изображения...`);
+
+        for (const altSelector of selectors.alternatives) {
+          const imgElement = await productPage.$(altSelector.imageSelector);
+          if (imgElement) {
+            product.img = await productPage.evaluate((el: HTMLImageElement) => el.srcset || el.src || el.getAttribute('src'), imgElement);
+            console.log(`Изображение найдено для товара с ID ${productId}: ${product.img}`);
+            foundImage = true;
+            break;
+          }
+        }
+
+        if (!foundImage) {
+          console.warn(`Не удалось найти изображение на странице товара: ${product.url}`);
+        }
+      } else {
+        console.log(`Изображение уже существует для товара с ID ${productId}: ${product.img}`);
+      }
+
+      // Обновляем изображение в базе данных, если оно было найдено
+      if (foundImage) {
+        await updateProduct(productId, { img: product.img });
+        console.log(`Обновлено изображение для товара с ID ${productId}.`);
+      }
+
+      await productPage.close();
+      await this.delay(1000);
+    }
   }
 
   private async scrollToBottom(page: puppeteer.Page) {
