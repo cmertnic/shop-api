@@ -34,27 +34,19 @@ interface StoreType {
   id: number;
   baseUrl: string;
   selectors: {
-    default: {
-      categorySelector: string;
-      subcategorySelector: string;
-      productSelector: string;
-      nameSelector: string;
-      priceSelector: string;
-      linkSelector: string;
-      imageSelector: string;
-      nextPageSelector: string;
-    };
-    alternatives: Array<{
-      categorySelector: string;
-      subcategorySelector: string;
-      productSelector: string;
-      nameSelector: string;
-      priceSelector: string;
-      linkSelector: string;
-      imageSelector: string;
-      nextPageSelector: string;
-    }>;
+    default:storedeafute,
+    alternatives:storedeafute[]
   };
+}
+interface storedeafute{
+  categorySelector: string;
+  subcategorySelector: string;
+  productSelector: string;
+  nameSelector: string;
+  priceSelector: string;
+  linkSelector: string;
+  imageSelector: string;
+  nextPageSelector: string;
 }
 
 @Injectable()
