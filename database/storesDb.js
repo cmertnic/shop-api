@@ -84,54 +84,6 @@ function getAllStores() {
 
 async function seedDatabase() {
   const stores = [
-    // {
-    //   name: "eldorado",
-    //   baseUrl: "https://www.eldorado.ru",
-    //   selectors: JSON.stringify({
-    //     default: {
-    //       categorySelector: "Kr",
-    //       subcategorySelector: "eld-button",
-    //       productSelector: "Eo Gq",
-    //       nameSelector: "Sm",
-    //       priceSelector: "Ym",
-    //       linkSelector: "Hm",
-    //       imageSelector: "Km",
-    //       nextPageSelector: 'Az Bz'
-    //     },
-    //     alternatives: [
-    //       {
-    //         categorySelector: "Kr",
-    //         subcategorySelector: "eld-button",
-    //         productSelector: "WU",
-    //         nameSelector: "eV",
-    //         priceSelector: "S4 _4",
-    //         linkSelector: "cw dw",
-    //         imageSelector: "uD",
-    //         nextPageSelector: 'Az Bz'
-    //       },
-    //       {
-    //         categorySelector: "Fr",
-    //         subcategorySelector: "eld-button",
-    //         productSelector: "Fm",
-    //         nameSelector: "Sm",
-    //         priceSelector: "S4 _4",
-    //         linkSelector: "Hm",
-    //         imageSelector: "Km",
-    //         nextPageSelector: 'Az Bz'
-    //       },
-    //       {
-    //         categorySelector: "Fr",
-    //         subcategorySelector: "eld-button",
-    //         productSelector: "Ws",
-    //         nameSelector: "Ny",
-    //         priceSelector: "My",
-    //         linkSelector: "Ey",
-    //         imageSelector: "Km",
-    //         nextPageSelector: 'lK uK pK'
-    //       },
-    //     ]
-    //   }),
-    // },
     {
       name: "sima-land",
       baseUrl: "https://www.sima-land.ru",

@@ -34,11 +34,11 @@ interface StoreType {
   id: number;
   baseUrl: string;
   selectors: {
-    default:storedeafute,
-    alternatives:storedeafute[]
+    default: storedeafute,
+    alternatives: storedeafute[]
   };
 }
-interface storedeafute{
+interface storedeafute {
   categorySelector: string;
   subcategorySelector: string;
   productSelector: string;
@@ -51,8 +51,6 @@ interface storedeafute{
 
 @Injectable()
 export class ProductsService {
-  private maxConcurrentTabs = 200;
-  private activeTabs = 0;
   private browser: puppeteer.Browser;
   private visitedUrls: Set<string> = new Set();
 
@@ -102,7 +100,9 @@ export class ProductsService {
     this.visitedUrls.add(categoryUrl);
 
     try {
-      await page.goto(categoryUrl, { waitUntil: 'networkidle2', timeout: 100000 });
+      await this.setRandomUserAgent(page);
+      await page.goto(categoryUrl, { waitUntil: 'domcontentloaded', timeout: 100000 });
+
       let productElements = await page.$$(selectors.default.productSelector);
 
       // Если продукты не найдены, проверяем альтернативные селекторы
@@ -123,7 +123,6 @@ export class ProductsService {
         return products;
       }
 
-      // Извлекаем продукты
       const productPromises = productElements.map(async (element) => {
         let name = '', price = '', img = '', link = '';
 
@@ -163,7 +162,6 @@ export class ProductsService {
           }
         }
 
-        // Добавляем продукт в массив
         const normalizedPrice = this.normalizePrice(price);
         products.push({ name: name || '', price: normalizedPrice, url: link, img: img || '' });
 
@@ -172,12 +170,14 @@ export class ProductsService {
 
       await Promise.all(productPromises);
 
-      // Получаем ссылки на подкатегории
       const subCategoryLinks = await this.getCategoryLinks(categoryUrl, selectors.default.subcategorySelector, selectors);
       const subCategoryPromises = subCategoryLinks.map(subCategoryLink => this.scrapeProducts(subCategoryLink, storeId, baseUrl, selectors));
       const subCategoryProducts = await Promise.all(subCategoryPromises);
       products.push(...subCategoryProducts.flat());
+
       await this.saveProductsToDb(products);
+
+      await this.delay(2000);
 
     } catch (error) {
       console.error(`Ошибка при извлечении продуктов из категории ${categoryUrl}: ${error.message}`);
@@ -187,26 +187,83 @@ export class ProductsService {
 
     return products;
   }
+
   private async getCategoryLinks(categoryUrl: string, subcategorySelector: string, selectors: any): Promise<string[]> {
     const links: string[] = [];
     const page = await this.browser.newPage();
 
     try {
-      await page.goto(categoryUrl, { waitUntil: 'networkidle2', timeout: 60000 });
-      const subCategoryElements = await page.$$(subcategorySelector);
+        console.log(`Переход на страницу категории: ${categoryUrl}`);
+        await this.setRandomUserAgent(page);
+        await page.goto(categoryUrl, { waitUntil: 'networkidle2', timeout: 60000 });
 
-      for (const element of subCategoryElements) {
-        const link = await page.evaluate((el: HTMLAnchorElement) => el.href, element as unknown as HTMLAnchorElement);
-        links.push(link);
-      }
+        const subCategoryElements = await page.$$(subcategorySelector);
+        console.log(`Найдено подкатегорий: ${subCategoryElements.length}`);
+
+        for (const element of subCategoryElements) {
+            let link = await page.evaluate((el) => {
+                const anchor = el.querySelector('a');
+                return anchor ? anchor.href : null;
+            }, element);
+
+            // Если ссылка не найдена, пробуем найти её в родительском элементе
+            if (!link) {
+                link = await page.evaluate((el) => {
+                    const parentAnchor = el.closest('div')?.querySelector('a');
+                    return parentAnchor ? parentAnchor.href : null;
+                }, element);
+            }
+
+            // Если ссылка все еще не найдена, проверяем наличие onclick
+            if (!link) {
+                const hasOnClick = await page.evaluate((el) => {
+                    return el.hasAttribute('onclick');
+                }, element);
+
+                if (hasOnClick) {
+                    console.log(`Клик по элементу с onclick`);
+                    await page.evaluate((el) => {
+                        (el as HTMLElement).click();
+                    }, element);
+                    await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 60000 });
+                    link = page.url();
+                    console.log(`Переход по ссылке: ${link}`);
+                } else {
+                    console.log(`Элемент не содержит ссылки и onclick.`);
+                }
+            }
+
+            // Если ссылка все еще не найдена, проверяем onclick для получения URL
+            if (!link) {
+                link = await page.evaluate((el) => {
+                    const onclick = el.getAttribute('onclick');
+                    if (onclick) {
+                        const match = onclick.match(/location.href='([^']+)'/);
+                        return match ? match[1] : null;
+                    }
+                    return null;
+                }, element);
+            }
+
+            // Если ссылка найдена, добавляем её в массив
+            if (link) {
+                console.log(`Найдена ссылка: ${link}`);
+                links.push(link);
+            }
+        }
+
+        await this.delay(2000);
+        console.log(`Общее количество найденных ссылок: ${links.length}`);
+
     } catch (error) {
-      console.error(`Ошибка при получении подкатегорий из ${categoryUrl}: ${error.message}`);
+        console.error(`Ошибка при получении подкатегорий из ${categoryUrl}: ${error.message}`);
     } finally {
-      await page.close();
+        await page.close();
     }
 
     return links;
-  }
+}
+
 
   public async getAllProducts(storeId: number) {
     const store = await getStoreById(storeId);
@@ -219,10 +276,10 @@ export class ProductsService {
     const allProducts: Product[] = [];
 
     try {
-      const categoryLinks = await getAllStores(); // Получаем все категории магазина
+      const categoryLinks = await getAllStores();
       const categoryPromises = categoryLinks.map(categoryLink => this.scrapeProducts(categoryLink, storeId, store.baseUrl, selectors));
       const productsFromCategories = await Promise.all(categoryPromises);
-      allProducts.push(...productsFromCategories.flat()); // Объединяем все продукты
+      allProducts.push(...productsFromCategories.flat());
     } catch (error) {
       console.error(`Ошибка при извлечении всех продуктов: ${error.message}`);
     }
@@ -314,18 +371,13 @@ export class ProductsService {
     await Promise.all(fixPromises);
   }
 
-  private async scrapeProductsFromCategory(
-    categoryUrl: string,
-    baseUrl: string,
-    existingProductNames: Set<string>,
-    storeId: number,
-    selectors: StoreType['selectors']
-  ): Promise<number[]> {
+  private async scrapeProductsFromCategory(categoryUrl: string, baseUrl: string, existingProductNames: Set<string>, storeId: number, selectors: StoreType['selectors']): Promise<number[]> {
     const addedProductIds: number[] = [];
     const products: Product[] = [];
     const page = await this.browser.newPage();
 
     try {
+      await this.setRandomUserAgent(page);
       await page.goto(categoryUrl, { waitUntil: 'networkidle2', timeout: 200000 });
 
       // Прокрутка страницы вниз для загрузки всех товаров
@@ -337,7 +389,6 @@ export class ProductsService {
         return addedProductIds;
       }
 
-      // Извлекаем продукты с помощью метода scrapeProducts
       const extractedProducts = await this.scrapeProducts(categoryUrl, storeId, baseUrl, selectors);
       products.push(...extractedProducts);
       await this.delay(10000);
@@ -379,8 +430,10 @@ export class ProductsService {
         console.warn(`Не найдено ни одного продукта для добавления в категорию: ${categoryUrl}`);
       }
 
-      // Асинхронное исправление неправильных товаров
       await this.fixIncorrectProducts(addedProductIds, selectors);
+
+      await this.delay(2000);
+
     } catch (error) {
       console.error(`Ошибка при парсинге категории ${categoryUrl}: ${error.message}`);
     } finally {
@@ -396,64 +449,86 @@ export class ProductsService {
       return null;
     });
 
-    if (!product) return;
-
-    const isInvalidProduct = !product.name || !product.price || !product.url;
-
-    if (isInvalidProduct) {
-      console.log(`Исправление товара с ID ${productId}. Продукт невалиден (отсутствует имя, цена или URL).`);
-
-      const productPage = await this.browser.newPage();
-      await productPage.goto(product.url, { waitUntil: 'networkidle2' });
-
-      let foundImage = false;
-
-      // Проверяем наличие изображения
-      if (!product.img || product.img === '') {
-        console.log(`Изображение отсутствует для товара с ID ${productId}. Начинаем поиск изображения...`);
-
-        for (const altSelector of selectors.alternatives) {
-          const imgElement = await productPage.$(altSelector.imageSelector);
-          if (imgElement) {
-            product.img = await productPage.evaluate((el: HTMLImageElement) => el.srcset || el.src || el.getAttribute('src'), imgElement);
-            console.log(`Изображение найдено для товара с ID ${productId}: ${product.img}`);
-            foundImage = true;
-            break;
-          }
-        }
-
-        if (!foundImage) {
-          console.warn(`Не удалось найти изображение на странице товара: ${product.url}`);
-        }
-      } else {
-        console.log(`Изображение уже существует для товара с ID ${productId}: ${product.img}`);
-      }
-
-      // Обновляем изображение в базе данных, если оно было найдено
-      if (foundImage) {
-        await updateProduct(productId, { img: product.img });
-        console.log(`Обновлено изображение для товара с ID ${productId}.`);
-      }
-
-      await productPage.close();
-      await this.delay(1000);
+    if (!product) {
+      console.warn(`Продукт с ID ${productId} не найден, выходим из функции.`);
+      return;
     }
+
+    const page = await this.browser.newPage();
+    try {
+      await this.setRandomUserAgent(page);
+      await page.goto(product.url, { waitUntil: 'networkidle2', timeout: 60000 });
+
+      // Извлекаем обновленные данные о продукте
+      const updatedProductData = await this.scrapeProductData(page, selectors);
+      if (updatedProductData) {
+        await updateProduct({ ...product, ...updatedProductData });
+        console.log(`Продукт с ID ${productId} успешно обновлён.`);
+      }
+    } catch (error) {
+      console.error(`Ошибка при исправлении продукта с ID ${productId}: ${error.message}`);
+    } finally {
+      await page.close();
+    }
+  }
+  private async scrapeProductData(page: puppeteer.Page, selectors: StoreType['selectors']): Promise<Partial<Product> | null> {
+    try {
+      const name = await page.$eval(selectors.default.nameSelector, el => el.textContent?.trim() || '');
+      const price = await page.$eval(selectors.default.priceSelector, el => el.textContent?.trim() || '');
+      const imageUrl = await page.$eval(selectors.default.imageSelector, (el: Element) => (el as HTMLImageElement).src || '');
+
+      return {
+        name,
+        price,
+        img: imageUrl
+      };
+    } catch (error) {
+      console.error(`Ошибка при извлечении данных о продукте: ${error.message}`);
+      return null;
+    }
+  }
+
+
+  private async setRandomUserAgent(page: puppeteer.Page): Promise<void> {
+    const userAgents = [
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15',
+      'Mozilla/5.0 (Linux; Android 10; Pixel 3 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Mobile Safari/537.36',
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+    ];
+
+    const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+    await page.setUserAgent(randomUserAgent);
   }
 
   private async scrollToBottom(page: puppeteer.Page) {
     await page.evaluate(async () => {
       await new Promise<void>((resolve) => {
         const distance = 100;
+        let lastScrollHeight = 0;
+        const maxAttempts = 10;
+        let attempts = 0;
+
         const timer = setInterval(() => {
           const scrollHeight = document.body.scrollHeight;
           window.scrollBy(0, distance);
-          if (document.body.scrollHeight === scrollHeight) {
-            clearInterval(timer);
-            resolve();
+
+          // Проверка, изменяется ли высота страницы
+          if (scrollHeight === lastScrollHeight) {
+            attempts++;
+            if (attempts >= maxAttempts) {
+              clearInterval(timer);
+              resolve();
+            }
+          } else {
+            attempts = 0;
           }
+
+          lastScrollHeight = scrollHeight;
         }, 100);
       });
     });
   }
+
 }
 

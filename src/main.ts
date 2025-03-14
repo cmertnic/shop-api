@@ -8,7 +8,6 @@ async function bootstrap() {
   const PORT = process.env.PORT ?? 3000;
   await app.listen(PORT);
   
-  // Лог о том, что приложение запущено
   console.log(`Приложение запущено на http://localhost:${PORT}`);
 
   // Инициализация базы данных
@@ -53,7 +52,6 @@ async function bootstrap() {
     }
   };
 
-  // Запуск обработки магазинов через 10 секунд после старта сервера
   setTimeout(async () => {
     console.log('Запуск обработки магазинов...');
     await processStores();
